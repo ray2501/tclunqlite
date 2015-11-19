@@ -1,0 +1,57 @@
+2015-10-23  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2.5
+	* Update README
+	* Makefile.in: Add 'PTHREAD_MUTEX_RECURSIVE' undeclared solution.
+	  A workaround for glibc 2.11 issue (add _GNU_SOURCE definition)
+
+2015-10-21  Danilo Chang  <ray2501@gmail.com>
+
+	* configure.ac: Add UNQLITE_ENABLE_THREADS flag
+	* generic/tclunqlite.c: Enable UnQLite multi-thread support in
+	  Unqlite_Init function
+	* generic/tclunqlite.c: Add unqlite -enable-threads command to check
+	  current UNQLITE_ENABLE_THREADS setting
+
+2015-10-18  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2.4
+	* Update source code.
+
+2015-10-15  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2.3
+	* Implement doc_current_id and doc_last_id command
+	* Fix some Tcl_WrongNumArgs return incorrect command name
+
+2015-10-14  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2.2
+	* Implement kv_store/kv_append/kv_fetch binary mode
+	* Implement cursor_command getdata binary mode
+
+2015-10-12  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2.1
+	* Implement DBNAME sub command: doc_reset_cursor
+	* Implement DBNAME sub command: jx9_eval, jx9_eval_file
+	  Now user can execute jx9 script by using jx9_eval or jx9_eval_file
+
+2015-10-11  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.2
+	* Implement Document Store (JSON via Jx9) Interfaces commands
+
+2015-10-08  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.1
+	* Implement Cursor commands
+
+2015-10-08  Danilo Chang  <ray2501@gmail.com>
+
+	* Implement begin/commit/rollback function
+	* Implement kv_store/kv_append/kv_fetch/kv_delete function
+	* put UnQlite 1.1.6 source code to generic folder 
+	* put UnQlite license file to root folder, and rename to
+	  license.txt.unqlite.
+

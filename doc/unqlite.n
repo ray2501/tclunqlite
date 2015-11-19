@@ -1,0 +1,15 @@
+.TH unqlite n 4.1 "Tcl-Extensions"
+.HS unqlite tcl
+.BS
+.SH NAME
+unqlite \- an interface to the UnQLite database engine
+.SH SYNOPSIS
+\fBunqlite\fI command_name ?filename?\fR
+.br
+.SH DESCRIPTION
+UnQLite is a in-process software library which implements a self-contained, 
+serverless, zero-configuration, transactional NoSQL database engine.
+This extension provides an easy to use interface for accessing UnQLite 
+database files from Tcl.
+.PP
+For full documentation see \fIhttp://unqlite.org/\fR.
