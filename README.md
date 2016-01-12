@@ -67,64 +67,66 @@ a string or byte array (-binary BOOLEAN flag).
 
 ### Basic usage
 
-unqlite DBNAME FILENAME ?-readonly BOOLEAN? ?-mmap BOOLEAN? ?-create BOOLEAN? ?-in-memory BOOLEAN? ?-nomutex BOOLEAN?
-unqlite -enable-threads
-DBNAME close
-DBNAME config ?-disableautocommit BOOLEAN?
+unqlite DBNAME FILENAME ?-readonly BOOLEAN? ?-mmap BOOLEAN? ?-create BOOLEAN? ?-in-memory BOOLEAN? ?-nomutex BOOLEAN?  
+unqlite -enable-threads  
+DBNAME close  
+DBNAME config ?-disableautocommit BOOLEAN?  
 
 ### Key/value features
 
-DBNAME kv_store key value ?-binary BOOLEAN?
-DBNAME kv_append key value ?-binary BOOLEAN?
-DBNAME kv_fetch key ?-binary BOOLEAN?
-DBNAME kv_delete key
-Transactions
-DBNAME begin
-DBNAME commit
-DBNAME rollback
+DBNAME kv_store key value ?-binary BOOLEAN?  
+DBNAME kv_append key value ?-binary BOOLEAN?  
+DBNAME kv_fetch key ?-binary BOOLEAN?  
+DBNAME kv_delete key  
+
+### Transactions
+
+DBNAME begin  
+DBNAME commit  
+DBNAME rollback  
 
 ### Cursors
 
-DBNAME cursor_init CURSORNAME
-CURSORNAME seek key pos
-CURSORNAME first
-CURSORNAME last
-CURSORNAME next
-CURSORNAME prev
-CURSORNAME isvalid
-CURSORNAME getkey
-CURSORNAME getdata ?-binary BOOLEAN?
-CURSORNAME delete
-CURSORNAME reset
-CURSORNAME release
+DBNAME cursor_init CURSORNAME  
+CURSORNAME seek key pos  
+CURSORNAME first  
+CURSORNAME last  
+CURSORNAME next  
+CURSORNAME prev  
+CURSORNAME isvalid  
+CURSORNAME getkey  
+CURSORNAME getdata ?-binary BOOLEAN?  
+CURSORNAME delete  
+CURSORNAME reset  
+CURSORNAME release  
 
 ### Document Store (JSON via Jx9) Interfaces
 
-DBNAME doc_create collection_name
-DBNAME doc_fetch
-DBNAME doc_fetch_id record_id
-DBNAME doc_fetchall
-DBNAME doc_store json_record
-DBNAME doc_count
-DBNAME doc_delete record_id
-DBNAME doc_reset_cursor
-DBNAME doc_current_id
-DBNAME doc_last_id
-DBNAME doc_begin
-DBNAME doc_commit
-DBNAME doc_rollback
-DBNAME doc_drop
-DBNAME doc_close
+DBNAME doc_create collection_name  
+DBNAME doc_fetch  
+DBNAME doc_fetch_id record_id  
+DBNAME doc_fetchall  
+DBNAME doc_store json_record  
+DBNAME doc_count  
+DBNAME doc_delete record_id  
+DBNAME doc_reset_cursor  
+DBNAME doc_current_id  
+DBNAME doc_last_id  
+DBNAME doc_begin  
+DBNAME doc_commit  
+DBNAME doc_rollback  
+DBNAME doc_drop  
+DBNAME doc_close  
 
 ### Document Store (JSON via Jx9) Interfaces, for JX9 script
 
-DBNAME jx9_eval Jx9_script_string
-DBNAME jx9_eval_file Jx9_script_file
+DBNAME jx9_eval Jx9_script_string  
+DBNAME jx9_eval_file Jx9_script_file  
 
 ### Misc
 
-DBNAME random_string buf_size
-DBNAME version 
+DBNAME random_string buf_size  
+DBNAME version   
 
 
 Examples
