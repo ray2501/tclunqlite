@@ -139,9 +139,7 @@ Examples
     #true -> enable, false -> not enable
     unqlite -enable-threads
 
-    Get UnQLite version
-
-    #!/bin/tclsh
+### Get UnQLite version
 
     package require unqlite
 
