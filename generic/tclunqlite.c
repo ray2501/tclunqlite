@@ -511,7 +511,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     DB_DOC_STORE,
     DB_DOC_DELETE,
     DB_DOC_RESET_CURSOR,
-    DB_DOC_COUNT,	
+    DB_DOC_COUNT,
     DB_DOC_CURRENT_ID,
     DB_DOC_LAST_ID,
     DB_DOC_BEGIN,
@@ -809,9 +809,9 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       char *zArg;
       int i;
 
-      if( objc < 4 ){
-        Tcl_WrongNumArgs(interp, 1, objv,
-                         "HANDLE config ?-disableautocommit BOOLEAN? ");
+      if( objc < 4 || (objc&1)!=0 ){
+        Tcl_WrongNumArgs(interp, 2, objv,
+                         "?-disableautocommit BOOLEAN? ");
         return TCL_ERROR;
       }
 
@@ -982,12 +982,12 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     case DB_DOC_FETCHALL: {
 
       const char *JX9_PROG = NULL;
-  
+
       if( choice == DB_DOC_FETCH) {
         JX9_PROG = "print db_fetch($argv[0]);";
       } else if( choice == DB_DOC_FETCHALL) {
         JX9_PROG = "print db_fetch_all($argv[0]);";
-      } 
+      }
 
       if( objc != 2 ){
         Tcl_WrongNumArgs(interp, 2, objv, 0);
@@ -1048,7 +1048,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
       break;
     }
-    
+
     case DB_DOC_FETCH_ID: {
       const char *JX9_FETCH_ID = "print db_fetch_by_id($argv[0],$argv[1]);";
       char *record_id;
@@ -1125,7 +1125,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       Tcl_SetObjResult(interp,  pResultStr);
 
       break;
-    }    
+    }
 
     case DB_DOC_STORE: {
       const char *JX9_STORE = "$rc = db_store($argv[0],$argv[1]);";
@@ -1302,16 +1302,16 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       /*
        * db_last_record_id() return the unique ID (64-bit integer) of
        *  the last inserted record in the collection.
-       */	  
+       */
 
       const char *JX9_PROG = NULL;
-  
+
       if( choice == DB_DOC_CURRENT_ID) {
         JX9_PROG = "$rc = db_current_record_id($argv[0]);";
       } else if( choice == DB_DOC_LAST_ID) {
         JX9_PROG = "$rc = db_last_record_id($argv[0]);";
       } else if( choice == DB_DOC_COUNT) {
-        JX9_PROG = "$rc = db_total_records($argv[0]);";		
+        JX9_PROG = "$rc = db_total_records($argv[0]);";
 	  }
 
       unqlite_value *value;
@@ -1357,13 +1357,13 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
     case DB_DOC_BEGIN:
     case DB_DOC_COMMIT:
-    case DB_DOC_ROLLBACK: {	  
+    case DB_DOC_ROLLBACK: {
       const char *JX9_PROG = NULL;
-  
+
       if( choice == DB_DOC_BEGIN) {
         JX9_PROG = "$rc = db_begin();";
-      } else if ( choice == DB_DOC_COMMIT) {	
-        JX9_PROG = "$rc = db_commit();";	 
+      } else if ( choice == DB_DOC_COMMIT) {
+        JX9_PROG = "$rc = db_commit();";
       } else if ( choice == DB_DOC_ROLLBACK) {
         JX9_PROG = "$rc = db_rollback();";
       }
@@ -1654,6 +1654,13 @@ static int DbMain(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     }
   }
 
+  if( objc<3 || (objc&1)!=1 ){
+    Tcl_WrongNumArgs(interp, 1, objv,
+      "HANDLE FILENAME ?-readonly BOOLEAN? ?-mmap BOOLEAN? ?-create BOOLEAN? ?-in-memory BOOLEAN? ?-nomutex BOOLEAN? "
+    );
+    return TCL_ERROR;
+  }
+
   for(i=3; i+1<objc; i+=2){
     zArg = Tcl_GetStringFromObj(objv[i], 0);
 
@@ -1712,13 +1719,6 @@ static int DbMain(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       Tcl_AppendResult(interp, "unknown option: ", zArg, (char*)0);
       return TCL_ERROR;
     }
-  }
-
-  if( objc<3 || (objc&1)!=1 ){
-    Tcl_WrongNumArgs(interp, 1, objv,
-      "HANDLE FILENAME ?-readonly BOOLEAN? ?-mmap BOOLEAN? ?-create BOOLEAN? ?-in-memory BOOLEAN? ?-nomutex BOOLEAN? "
-    );
-    return TCL_ERROR;
   }
 
   p = (UnqliteDb *)Tcl_Alloc( sizeof(*p) );
@@ -1790,6 +1790,6 @@ EXTERN int Unqlite_Init(Tcl_Interp *interp)
   unqlite_lib_config( UNQLITE_LIB_CONFIG_THREAD_LEVEL_MULTI );
   unqlite_lib_init();
 #endif
-	
+
     return TCL_OK;
 }

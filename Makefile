@@ -150,7 +150,7 @@ INCLUDES	=  -I"/opt/activetcl/include"
 PKG_CFLAGS	=  -DUNQLITE_ENABLE_THREADS
 
 # glibc 2.11 not declaring pthread_mutexattr_settype and PTHREAD_MUTEX_RECURSIVE
-# by default, causing compilation failures on some Debian and Unbuntu version.
+# by default, causing compilation failures on some Debian and Ubuntu version.
 ifneq ("$(OS)","Windows_NT")
 ifneq ($(shell ldd --version | head -n 1 | grep 2.11),)
         PKG_CFLAGS += -D_GNU_SOURCE
