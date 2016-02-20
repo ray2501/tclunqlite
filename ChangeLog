@@ -1,3 +1,7 @@
+2016-02-20  Danilo Chang  <ray2501@gmail.com>
+
+    * Replace Tcl_GetString to Tcl_GetStringFromObj
+
 2015-10-23  Danilo Chang  <ray2501@gmail.com>
 
 	* Set version to v0.2.5

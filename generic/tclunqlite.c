@@ -33,7 +33,7 @@
 
 /*
  * Windows needs to know which symbols to export.  Unix does not.
- * BUILD_sqlite should be undefined for Unix.
+ * BUILD_unqlite should be undefined for Unix.
  */
 #ifdef BUILD_unqlite
 #undef TCL_STORAGE_CLASS
@@ -321,7 +321,7 @@ static int CursorObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*ob
 
       if( objc == 2 || objc == 4){
         if( objc == 4 ) {
-          zArg = Tcl_GetString(objv[2]);
+          zArg = Tcl_GetStringFromObj(objv[2], 0);
 
           if( strcmp(zArg, "-binary")==0 ){
             if( Tcl_GetBooleanFromObj(interp, objv[3], &binary_mode) ) return TCL_ERROR;
@@ -549,7 +549,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
         }
 
         if( objc == 6 ) {
-          zArg = Tcl_GetString(objv[4]);
+          zArg = Tcl_GetStringFromObj(objv[4], 0);
 
           if( strcmp(zArg, "-binary")==0 ){
             if( Tcl_GetBooleanFromObj(interp, objv[5], &binary_mode) ) return TCL_ERROR;
@@ -607,7 +607,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
         }
 
         if( objc == 6 ) {
-          zArg = Tcl_GetString(objv[4]);
+          zArg = Tcl_GetStringFromObj(objv[4], 0);
 
           if( strcmp(zArg, "-binary")==0 ){
             if( Tcl_GetBooleanFromObj(interp, objv[5], &binary_mode) ) return TCL_ERROR;
@@ -666,7 +666,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
         }
 
         if( objc == 5 ) {
-          zArg = Tcl_GetString(objv[3]);
+          zArg = Tcl_GetStringFromObj(objv[3], 0);
 
           if( strcmp(zArg, "-binary")==0 ){
             if( Tcl_GetBooleanFromObj(interp, objv[4], &binary_mode) ) return TCL_ERROR;
@@ -816,7 +816,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       }
 
       for(i=2; i+1<objc; i+=2){
-        zArg = Tcl_GetString(objv[i]);
+        zArg = Tcl_GetStringFromObj(objv[i], 0);
 
         if( strcmp(zArg, "-disableautocommit")==0 ){
           int b;
@@ -1655,7 +1655,7 @@ static int DbMain(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
   }
 
   for(i=3; i+1<objc; i+=2){
-    zArg = Tcl_GetString(objv[i]);
+    zArg = Tcl_GetStringFromObj(objv[i], 0);
 
     if( strcmp(zArg, "-readonly")==0 ){
       int b;
