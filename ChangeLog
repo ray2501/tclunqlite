@@ -1,5 +1,6 @@
 2016-02-20  Danilo Chang  <ray2501@gmail.com>
 
+	* Set version to v0.2.6
 	* Update DBNAME config command Tcl_WrongNumArgs string
 	* Replace Tcl_GetString to Tcl_GetStringFromObj
 
