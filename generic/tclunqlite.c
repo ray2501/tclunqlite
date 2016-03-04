@@ -305,7 +305,7 @@ static int CursorObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*ob
         return TCL_ERROR;
       }
 
-      pResultStr = Tcl_NewStringObj(zKey, -1);
+      pResultStr = Tcl_NewStringObj(zKey, nBytes);
       free(zKey);
 
       Tcl_SetObjResult(interp,  pResultStr);

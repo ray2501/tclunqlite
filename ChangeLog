@@ -1,5 +1,6 @@
 2016-03-04  Danilo Chang  <ray2501@gmail.com>
 
+	* Fix CURSOR getkey potential issue
 	* Add related test cases
 	* Add Tcl_GetIntFromObj() error check
 
