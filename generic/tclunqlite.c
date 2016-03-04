@@ -166,7 +166,9 @@ static int CursorObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*ob
           return TCL_ERROR;
         }
 
-        Tcl_GetIntFromObj(interp, objv[3], &iPos);
+        if(Tcl_GetIntFromObj(interp, objv[3], &iPos) != TCL_OK) {
+            return TCL_ERROR;
+        }
       }else{
         Tcl_WrongNumArgs(interp, 2, objv, "key pos");
         return TCL_ERROR;
@@ -878,7 +880,9 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       Tcl_Obj *pResultStr;
 
       if( objc == 3 ){
-        Tcl_GetIntFromObj(interp, objv[2], &buf_size);
+        if(Tcl_GetIntFromObj(interp, objv[2], &buf_size) != TCL_OK) {
+            return TCL_ERROR;
+        }
       } else {
         Tcl_WrongNumArgs(interp, 2, objv, "buf_size");
         return TCL_ERROR;
