@@ -40,6 +40,33 @@ test unqlite-1.3 {create a database, successful} {*}{
     -result {0}
 }
 
+test unqlite-1.4 {database config, wrong # args} {*}{
+    -body {
+        ::db config
+    }
+    -returnCodes error
+    -match glob
+    -result {wrong # args*}
+}
+
+test unqlite-1.5 {database config, wrong # args} {*}{
+    -body {
+        ::db config -disableautocommit
+    }
+    -returnCodes error
+    -match glob
+    -result {wrong # args*}
+}
+
+test unqlite-1.6 {database config} {*}{
+    -body {
+        catch {
+            ::db config -disableautocommit 0
+        } result
+    }
+    -result {0}
+}
+
 #-------------------------------------------------------------------------------
 
 test unqlite-2.1 {Put} {*}{
@@ -60,15 +87,98 @@ test unqlite-2.2 {Get} {*}{
     -result {567890}
 }
 
-test unqlite-2.3 {Delete} {*}{
+test unqlite-2.3 {Initial cursor} {*}{
+    -body {
+        ::db cursor_init cursor1
+        cursor1 first
+    }
+    -result {1}
+}
+
+test unqlite-2.4 {Cursor seek, wrong # args} {*}{
+    -body {
+        cursor1 seek
+    }
+    -returnCodes error
+    -match glob
+    -result {wrong # args*}
+}
+
+test unqlite-2.5 {Cursor seek, wrong # args} {*}{
+    -body {
+        cursor1 seek "1234"
+    }
+    -returnCodes error
+    -match glob
+    -result {wrong # args*}
+}
+
+test unqlite-2.6 {Cursor seek, expected interger} {*}{
+    -body {
+        cursor1 seek "1234" "test"
+    }
+    -returnCodes error
+    -match glob
+    -result {expected integer*}
+}
+
+test unqlite-2.7 {Cursor seek} {*}{
+    -body {
+        cursor1 seek "1234" 0
+    }
+    -result {1}
+}
+
+test unqlite-2.8 {Cursor isvalid} {*}{
+    -body {
+        cursor1 isvalid
+    }
+    -result {1}
+}
+
+test unqlite-2.9 {Cursor getkey} {*}{
+    -body {
+        cursor1 getkey
+    }
+    -result {1234}
+}
+
+test unqlite-2.10 {Cursor getdata} {*}{
+    -body {
+        cursor1 getdata
+    }
+    -result {567890}
+}
+
+test unqlite-2.11 {Cursor reset} {*}{
+    -body {
+        cursor1 reset
+    }
+    -result {1}
+}
+
+test unqlite-2.12 {Delete} {*}{
     -body {
         ::db kv_delete "1234"   
     }
     -result {1}
 }
 
+
 #-------------------------------------------------------------------------------
 
+test unqlite-3.1 {random_sting, expected interger} {*}{
+    -body {
+        ::db random_string "test"
+    }
+    -returnCodes error
+    -match glob
+    -result {expected integer*}
+}
+
+#-------------------------------------------------------------------------------
+
+catch {cursor1 release}
 catch {rename ::db {}}
 
 cleanupTests
