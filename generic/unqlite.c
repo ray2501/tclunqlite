@@ -878,6 +878,10 @@ UNQLITE_APIEXPORT int unqlite_open(unqlite **ppDB,const char *zFilename,unsigned
 UNQLITE_APIEXPORT int unqlite_config(unqlite *pDb,int nOp,...);
 UNQLITE_APIEXPORT int unqlite_close(unqlite *pDb);
 
+/* Memory Allocation */
+UNQLITE_APIEXPORT void* unqlite_malloc(unsigned int nByte);
+UNQLITE_APIEXPORT void unqlite_free(void *p);
+
 /* Key/Value (KV) Store Interfaces */
 UNQLITE_APIEXPORT int unqlite_kv_store(unqlite *pDb,const void *pKey,int nKeyLen,const void *pData,unqlite_int64 nDataLen);
 UNQLITE_APIEXPORT int unqlite_kv_append(unqlite *pDb,const void *pKey,int nKeyLen,const void *pData,unqlite_int64 nDataLen);
@@ -3829,10 +3833,12 @@ static sxi32 unqliteCoreInitialize(void)
 	if( sUnqlMPGlobal.nMagic == UNQLITE_LIB_MAGIC ){
 		return UNQLITE_OK; /* Already initialized */
 	}
-	/* Point to the built-in vfs */
-	pVfs = unqliteExportBuiltinVfs();
-	/* Install it */
-	unqlite_lib_config(UNQLITE_LIB_CONFIG_VFS, pVfs);
+	if( sUnqlMPGlobal.pVfs == 0 ){
+		/* Point to the built-in vfs */
+		pVfs = unqliteExportBuiltinVfs();
+		/* Install it */
+		unqlite_lib_config(UNQLITE_LIB_CONFIG_VFS, pVfs);
+	}
 #if defined(UNQLITE_ENABLE_THREADS)
 	if( sUnqlMPGlobal.nThreadingLevel != UNQLITE_THREAD_LEVEL_SINGLE ){
 		pMutexMethods = sUnqlMPGlobal.pMutexMethods;
@@ -7233,10 +7239,12 @@ static sxi32 Jx9CoreInitialize(void)
 	if( sJx9MPGlobal.nMagic == JX9_LIB_MAGIC ){
 		return JX9_OK; /* Already initialized */
 	}
-	/* Point to the built-in vfs */
-	pVfs = jx9ExportBuiltinVfs();
-	/* Install it */
-	jx9_lib_config(JX9_LIB_CONFIG_VFS, pVfs);
+	if( sJx9MPGlobal.pVfs == 0 ){
+		/* Point to the built-in vfs */
+		pVfs = jx9ExportBuiltinVfs();
+		/* Install it */
+		jx9_lib_config(JX9_LIB_CONFIG_VFS, pVfs);
+	}
 #if defined(JX9_ENABLE_THREADS)
 	if( sJx9MPGlobal.nThreadingLevel != JX9_THREAD_LEVEL_SINGLE ){
 		pMutexMethods = sJx9MPGlobal.pMutexMethods;
@@ -30274,8 +30282,8 @@ static sxi32 SyOSUtilRandomSeed(void *pBuf, sxu32 nLen, void *pUnused)
 			close(fd);
 			return SXRET_OK;
 		}
-		close(fd);
 		/* FALL THRU */
+		close(fd);
 	}
 	pid = getpid();
 	SyMemcpy((const void *)&pid, zBuf, SXMIN(nLen, sizeof(pid_t)));
@@ -46466,7 +46474,7 @@ static int vm_builtin_get_resource_type(jx9_context *pCtx, int nArg, jx9_value *
 }
 /*
  * void dump(expression, ....)
- *   dump — Dumps information about a variable
+ *   dump â€” Dumps information about a variable
  * Parameters
  *   One or more expression to dump.
  * Returns
@@ -47123,9 +47131,9 @@ static sxi32 VmExecIncludedFile(
  *  and the current working directory before failing. The include()
  *  construct will emit a warning if it cannot find a file; this is different
  *  behavior from require(), which will emit a fatal error.
- *  If a path is defined — whether absolute (starting with a drive letter
+ *  If a path is defined â€” whether absolute (starting with a drive letter
  *  or \ on Windows, or / on Unix/Linux systems) or relative to the current
- *  directory (starting with . or ..) — the include_path will be ignored altogether.
+ *  directory (starting with . or ..) â€” the include_path will be ignored altogether.
  *  For example, if a filename begins with ../, the parser will look in the parent
  *  directory to find the requested file.
  *  When a file is included, the code it contains inherits the variable scope
@@ -52872,7 +52880,7 @@ static unixInodeInfo *inodeList = 0;
 /*
  * Local memory allocation stuff.
  */
-static void * unqlite_malloc(sxu32 nByte)
+void * unqlite_malloc(unsigned int nByte)
 {
 	SyMemBackend *pAlloc;
 	void *p;
@@ -52880,7 +52888,7 @@ static void * unqlite_malloc(sxu32 nByte)
 	p = SyMemBackendAlloc(pAlloc,nByte);
 	return p;
 }
-static void unqlite_free(void *p)
+void unqlite_free(void *p)
 {
 	SyMemBackend *pAlloc;
 	pAlloc = (SyMemBackend *)unqliteExportMemBackend();
@@ -58825,6 +58833,96 @@ static int CollectionStore(
 	return UNQLITE_OK;
 }
 /*
+ * Perform a update operation on a given collection.
+ */
+static int CollectionUpdate(
+                            unqlite_col *pCol, /* Target collection */
+                            jx9_int64 nId,     /* Record ID */
+                            jx9_value *pValue  /* JSON value to be stored */
+)
+{
+    SyBlob *pWorker = &pCol->sWorker;
+    unqlite_kv_methods *pMethods;
+    unqlite_kv_engine *pEngine;
+    sxu32 nKeyLen;
+    int rc;
+    /* Point to the underlying KV store */
+    pEngine = unqlitePagerGetKvEngine(pCol->pVm->pDb);
+    pMethods = pEngine->pIo->pMethods;
+    if( pCol->nTotRec >= SXI64_HIGH ){
+        /* Collection limit reached. No more records */
+        unqliteGenErrorFormat(pCol->pVm->pDb,
+                              "Collection '%z': Records limit reached",
+                              &pCol->sName
+                              );
+        return UNQLITE_LIMIT;
+    }
+    if( pMethods->xReplace == 0 ){
+        unqliteGenErrorFormat(pCol->pVm->pDb,
+                              "Cannot store record into collection '%z' due to a read-only Key/Value storage engine",
+                              &pCol->sName
+                              );
+        return UNQLITE_READ_ONLY;
+    }
+    /* Reset the working buffer */
+    SyBlobReset(pWorker);
+    
+    /* Prepare the unique ID for this record */
+    SyBlobFormat(pWorker,"%z_%qd",&pCol->sName, nId);
+    
+    /* Reset the cursor */
+    unqlite_kv_cursor_reset(pCol->pCursor);
+    /* Seek the cursor to the desired location */
+    rc = unqlite_kv_cursor_seek(pCol->pCursor,
+                                SyBlobData(pWorker),SyBlobLength(pWorker),
+                                UNQLITE_CURSOR_MATCH_EXACT
+                                );
+    if( rc != UNQLITE_OK ){
+        unqliteGenErrorFormat(pCol->pVm->pDb,
+                              "No record to update in collection '%z'",
+                              &pCol->sName
+                              );
+        return rc;
+    }
+    
+    if( jx9_value_is_json_object(pValue) ){
+        jx9_value sId;
+        /* If the given type is a JSON object, then add the special __id field */
+        jx9MemObjInitFromInt(pCol->pVm->pJx9Vm,&sId,nId);
+        jx9_array_add_strkey_elem(pValue,"__id",&sId);
+        jx9MemObjRelease(&sId);
+    }
+    
+    nKeyLen = SyBlobLength(pWorker);
+    if( nKeyLen < 1 ){
+        unqliteGenOutofMem(pCol->pVm->pDb);
+        return UNQLITE_NOMEM;
+    }
+    /* Turn to FastJson */
+    rc = FastJsonEncode(pValue,pWorker,0);
+    if( rc != UNQLITE_OK ){
+        return rc;
+    }
+    /* Finally perform the insertion */
+    rc = pMethods->xReplace(
+                            pEngine,
+                            SyBlobData(pWorker),nKeyLen,
+                            SyBlobDataAt(pWorker,nKeyLen),SyBlobLength(pWorker)-nKeyLen
+                            );
+    if( rc == UNQLITE_OK ){
+        /* Save the value in the cache */
+        CollectionCacheInstallRecord(pCol,nId,pValue);
+    }
+    if( rc != UNQLITE_OK ){
+        unqliteGenErrorFormat(pCol->pVm->pDb,
+                              "IO error while storing record into collection '%z'",
+                              &pCol->sName
+                              );
+        return rc;
+    }
+    return UNQLITE_OK;
+}
+/*
  * Array walker callback (Refer to jx9_array_walk()).
  */
 static int CollectionRecordArrayWalker(jx9_value *pKey,jx9_value *pData,void *pUserData)
@@ -58898,6 +58996,21 @@ UNQLITE_PRIVATE int unqliteCollectionDropRecord(
 		}
 	}
 	return rc;
+}
+/*
+ * Update a given record with new data
+ */
+UNQLITE_PRIVATE int unqliteCollectionUpdateRecord(unqlite_col *pCol,jx9_int64 nId, jx9_value *pValue,int iFlag)
+{
+    int rc;
+    if( !jx9_value_is_json_object(pValue) && jx9_value_is_json_array(pValue) ){
+        /* Iterate over the array and store its members in the collection */
+        rc = jx9_array_walk(pValue,CollectionRecordArrayWalker,pCol);
+        SXUNUSED(iFlag); /* cc warning */
+    }else{
+        rc = CollectionUpdate(pCol,nId,pValue);
+    }
+    return rc;
 }
 /*
  * Drop a collection from the KV storage engine and the underlying
@@ -59613,6 +59726,59 @@ static int unqliteBuiltin_db_store(jx9_context *pCtx,int argc,jx9_value **argv)
 	jx9_result_bool(pCtx,1);
 	return JX9_OK;
 }
+
+/*
+ * bool db_update_record(string $col_name, int_64 record_id, object $json_object)
+ *   Update a given record with new json object
+ * Parameter
+ * col_name: Collection name
+ *   record_id: ID of the record
+ *   json_object: New Record data
+ * Return
+ *   TRUE on success. FALSE on failure.
+ */
+static int unqliteBuiltin_db_update_record(jx9_context *pCtx,int argc,jx9_value **argv)
+{
+    unqlite_col *pCol;
+    const char *zName;
+    unqlite_vm *pVm;
+    SyString sName;
+    jx9_int64 nId;
+    int nByte;
+    int rc;
+    /* Extract collection name */
+    if( argc < 2 ){
+        /* Missing arguments */
+        jx9_context_throw_error(pCtx,JX9_CTX_ERR,"Missing collection name and/or records");
+        /* Return false */
+        jx9_result_bool(pCtx,0);
+        return JX9_OK;
+    }
+    zName = jx9_value_to_string(argv[0],&nByte);
+    if( nByte < 1){
+        jx9_context_throw_error(pCtx,JX9_CTX_ERR,"Invalid collection name");
+        /* Return false */
+        jx9_result_bool(pCtx,0);
+        return JX9_OK;
+    }
+    SyStringInitFromBuf(&sName,zName,nByte);
+    pVm = (unqlite_vm *)jx9_context_user_data(pCtx);
+    /* Fetch the collection */
+    pCol = unqliteCollectionFetch(pVm,&sName,UNQLITE_VM_AUTO_LOAD);
+    if( pCol == 0 ){
+        jx9_context_throw_error_format(pCtx,JX9_CTX_ERR,"No such collection '%z'",&sName);
+        /* Return false */
+        jx9_result_bool(pCtx,0);
+        return JX9_OK;
+    }
+    /* Update a record with the given value */
+    nId = jx9_value_to_int64(argv[1]);
+    rc = unqliteCollectionUpdateRecord(pCol, nId, argv[2], 0);
+    /* All done, return TRUE */
+    jx9_result_bool(pCtx,rc == UNQLITE_OK);
+    return JX9_OK;
+}
+
 /*
  * bool db_drop_collection(string $col_name)
  * bool collection_delete(string $col_name)
@@ -59916,6 +60082,7 @@ UNQLITE_PRIVATE int unqliteRegisterJx9Functions(unqlite_vm *pVm)
 		{ "db_total_records",  unqliteBuiltin_db_total_records  },
 		{ "db_creation_date",  unqliteBuiltin_db_creation_date  },
 		{ "db_store",          unqliteBuiltin_db_store          },
+        { "db_update_record",  unqliteBuiltin_db_update_record  },
 		{ "db_put",            unqliteBuiltin_db_store          },
 		{ "db_drop_collection", unqliteBuiltin_db_drop_col      },
 		{ "collection_delete", unqliteBuiltin_db_drop_col       },

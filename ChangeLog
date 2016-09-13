@@ -1,3 +1,8 @@
+2016-09-13  Danilo Chang  <ray2501@gmail.com>
+
+	* Add doc_update_record method
+	* Update UnQLite source code: add db_record_update method
+
 2016-03-04  Danilo Chang  <ray2501@gmail.com>
 
 	* Set version to v0.2.7

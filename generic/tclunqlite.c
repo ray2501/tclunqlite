@@ -478,6 +478,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     "doc_fetchall",
     "doc_fetch_id",
     "doc_store",
+    "doc_update_record",
     "doc_delete",
     "doc_reset_cursor",
     "doc_count",
@@ -511,6 +512,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     DB_DOC_FETCHALL,
     DB_DOC_FETCH_ID,
     DB_DOC_STORE,
+    DB_DOC_UPDATE_RECORD,
     DB_DOC_DELETE,
     DB_DOC_RESET_CURSOR,
     DB_DOC_COUNT,
@@ -1158,6 +1160,80 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       }
 
       result = unqlite_vm_config(pDb->vm, UNQLITE_VM_CONFIG_ARGV_ENTRY, pDb->collection_name);
+      if( result != UNQLITE_OK ){
+        unqlite_vm_release(pDb->vm);
+
+        Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(0));
+        return TCL_ERROR;
+      }
+
+      result = unqlite_vm_config(pDb->vm, UNQLITE_VM_CONFIG_ARGV_ENTRY, json_record);
+      if( result != UNQLITE_OK ){
+        unqlite_vm_release(pDb->vm);
+
+        Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(0));
+        return TCL_ERROR;
+      }
+
+      result = unqlite_vm_exec(pDb->vm);
+      if( result != UNQLITE_OK ){
+        unqlite_vm_release(pDb->vm);
+
+        Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(0));
+        return TCL_ERROR;
+      }
+
+      value = unqlite_vm_extract_variable(pDb->vm, "rc");
+      bool_result = unqlite_value_to_bool(value);
+
+      unqlite_vm_release(pDb->vm);
+      Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(bool_result));
+
+      break;
+    }
+
+    case DB_DOC_UPDATE_RECORD: {
+      const char *JX9_STORE = "$rc = db_update_record($argv[0],$argv[1],$argv[2]);";
+      char *record_id;
+      char *json_record;
+      int len;
+      unqlite_value *value;
+      int bool_result;
+
+      if( objc == 4 ){
+        record_id = Tcl_GetStringFromObj(objv[2], &len);
+
+        if( !record_id || len < 1 ){
+          return TCL_ERROR;
+        }
+
+        json_record = Tcl_GetStringFromObj(objv[3], &len);
+
+        if( !json_record || len < 1 ){
+          return TCL_ERROR;
+        }
+      }else{
+        Tcl_WrongNumArgs(interp, 2, objv, "record_id json_record");
+        return TCL_ERROR;
+      }
+
+      result = unqlite_compile(pDb->db, JX9_STORE, strlen(JX9_STORE),&pDb->vm);
+      if( result != UNQLITE_OK ){
+        unqlite_vm_release(pDb->vm);
+
+        Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(0));
+        return TCL_ERROR;
+      }
+
+      result = unqlite_vm_config(pDb->vm, UNQLITE_VM_CONFIG_ARGV_ENTRY, pDb->collection_name);
+      if( result != UNQLITE_OK ){
+        unqlite_vm_release(pDb->vm);
+
+        Tcl_SetObjResult(interp,  Tcl_NewBooleanObj(0));
+        return TCL_ERROR;
+      }
+
+      result = unqlite_vm_config(pDb->vm, UNQLITE_VM_CONFIG_ARGV_ENTRY, record_id);
       if( result != UNQLITE_OK ){
         unqlite_vm_release(pDb->vm);
 
