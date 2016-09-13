@@ -107,6 +107,7 @@ DBNAME doc_fetch
 DBNAME doc_fetch_id record_id  
 DBNAME doc_fetchall  
 DBNAME doc_store json_record  
+DBNAME doc_update_record record_id json_record  
 DBNAME doc_count  
 DBNAME doc_delete record_id  
 DBNAME doc_reset_cursor  
@@ -259,6 +260,7 @@ Examples
     db1 doc_store "{ name : 'glary', age : 45, mail : 'beart@example.com'  }"
 
     puts [db1 doc_fetchall]
+    db1 doc_update_record 1 "{ name : 'scott', age : 49, mail : 'dude@test.com'  }"
     puts "Now doc_fetc_id and doc_delete id 1"
     puts [db1 doc_fetch_id 1]
     db1 doc_delete 1
@@ -365,4 +367,5 @@ Notes
 =====
 
 DBNAME doc_current_id always return current record id 0, and DBNAME 
-doc_fetch only can get the first record, this is UnQLite API limits. 
+doc_fetch only can get the first record, this is UnQLite API limits.
+
