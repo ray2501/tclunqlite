@@ -3344,7 +3344,7 @@ struct unqlite
  * VM control flags (Mostly related to collection handling).
  */
 #define UNQLITE_VM_COLLECTION_CREATE     0x001 /* Create a new collection */
-#define UNQLITE_VM_COLLECTION_OVERWRITE  0x002 /* Overwrite old collection */
+#define UNQLITE_VM_COLLECTION_EXISTS     0x002 /* Exists old collection */
 #define UNQLITE_VM_AUTO_LOAD             0x004 /* Auto load a collection from the vfs */
 /* Forward declaration */
 typedef struct unqlite_col_record unqlite_col_record;
@@ -3457,6 +3457,7 @@ UNQLITE_PRIVATE int unqliteGenError(unqlite *pDb,const char *zErr);
 UNQLITE_PRIVATE int unqliteGenErrorFormat(unqlite *pDb,const char *zFmt,...);
 UNQLITE_PRIVATE int unqliteGenOutofMem(unqlite *pDb);
 /* unql_vm.c */
+UNQLITE_PRIVATE int unqliteExistsCollection(unqlite_vm *pVm, SyString *pName);
 UNQLITE_PRIVATE int unqliteCreateCollection(unqlite_vm *pVm,SyString *pName);
 UNQLITE_PRIVATE jx9_int64 unqliteCollectionLastRecordId(unqlite_col *pCol);
 UNQLITE_PRIVATE jx9_int64 unqliteCollectionCurrentRecordId(unqlite_col *pCol);
@@ -58549,9 +58550,14 @@ static int unqliteVmLoadCollection(
 	}
 	if( (iFlag & UNQLITE_VM_COLLECTION_CREATE) == 0 ){
 		/* Seek to the desired location */
-		rc = pMethods->xSeek(pCursor,(const void *)zName,(unqlite_int64)nByte,UNQLITE_CURSOR_MATCH_EXACT);
-		if( rc != UNQLITE_OK ){
+		rc = pMethods->xSeek(pCursor,(const void *)zName,(int)nByte,UNQLITE_CURSOR_MATCH_EXACT);
+		if( rc != UNQLITE_OK && (iFlag & UNQLITE_VM_COLLECTION_EXISTS) == 0){
 			unqliteGenErrorFormat(pDb,"Collection '%.*s' not defined in the underlying database",nByte,zName);
+
+			unqliteReleaseCursor(pDb,pCursor);
+			return rc;
+		}
+		else if((iFlag & UNQLITE_VM_COLLECTION_EXISTS)){
 			unqliteReleaseCursor(pDb,pCursor);
 			return rc;
 		}
@@ -58762,6 +58768,25 @@ UNQLITE_PRIVATE int unqliteCollectionFetchNextRecord(unqlite_col *pCol,jx9_value
 		}
 	}
 	return rc;
+}
+/*
+ * Judge a collection whether exists
+ */
+UNQLITE_PRIVATE int unqliteExistsCollection(
+    unqlite_vm *pVm, /* Target VM */
+    SyString *pName  /* Collection name */
+    )
+{
+    unqlite_col *pCol;
+    int rc;
+    /* Perform a lookup first */
+    pCol = unqliteVmFetchCollection(pVm,pName);
+    if( pCol ){
+        /* Already loaded in memory*/
+        return UNQLITE_OK;
+    }
+    rc = unqliteVmLoadCollection(pVm,pName->zString,pName->nByte,UNQLITE_VM_COLLECTION_EXISTS,0);
+    return rc;
 }
 /*
  * Create a new collection.
@@ -59214,6 +59239,7 @@ static int unqliteBuiltin_collection_exists(jx9_context *pCtx,int argc,jx9_value
 	unqlite_vm *pVm;
 	SyString sName;
 	int nByte;
+	int rc;
 	/* Extract collection name */
 	if( argc < 1 ){
 		/* Missing arguments */
@@ -59232,9 +59258,9 @@ static int unqliteBuiltin_collection_exists(jx9_context *pCtx,int argc,jx9_value
 	SyStringInitFromBuf(&sName,zName,nByte);
 	pVm = (unqlite_vm *)jx9_context_user_data(pCtx);
 	/* Perform the lookup */
-	pCol = unqliteCollectionFetch(pVm,&sName,UNQLITE_VM_AUTO_LOAD);
+	rc = unqliteExistsCollection(pVm, &sName);
 	/* Lookup result */
-	jx9_result_bool(pCtx,pCol ? 1 : 0);
+	jx9_result_bool(pCtx, rc == UNQLITE_OK ? 1 : 0);
 	return JX9_OK;
 }
 /*
