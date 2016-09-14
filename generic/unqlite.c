@@ -4116,11 +4116,11 @@ static int unqliteInitDatabase(
 	int rc;
 	/* Initialiaze the memory subsystem */
 	SyMemBackendInitFromParent(&pDB->sMem,pParent);
-#if defined(UNQLITE_ENABLE_THREADS)
-	/* No need for internal mutexes */
-	SyMemBackendDisbaleMutexing(&pDB->sMem);
-#endif
-	SyBlobInit(&pDB->sErr,&pDB->sMem);	
+//#if defined(UNQLITE_ENABLE_THREADS)
+//	/* No need for internal mutexes */
+//	SyMemBackendDisbaleMutexing(&pDB->sMem);
+//#endif
+	SyBlobInit(&pDB->sErr,&pDB->sMem);
 	/* Sanityze flags */
 	iFlags = unqliteSanityzeFlag(iFlags);
 	/* Init the pager and the transaction manager */
@@ -7419,9 +7419,9 @@ JX9_PRIVATE int jx9_init(jx9 **ppEngine)
 	if( rc != JX9_OK ){
 		goto Release;
 	}
-#if defined(JX9_ENABLE_THREADS)
-	SyMemBackendDisbaleMutexing(&pEngine->sAllocator);
-#endif
+//#if defined(JX9_ENABLE_THREADS)
+//	SyMemBackendDisbaleMutexing(&pEngine->sAllocator);
+//#endif
 	/* Default configuration */
 	SyBlobInit(&pEngine->xConf.sErrConsumer, &pEngine->sAllocator);
 	/* Install a default compile-time error consumer routine */
@@ -51303,10 +51303,10 @@ static int lhash_kv_init(unqlite_kv_engine *pEngine,int iPageSize)
 
 	/* This structure is always zeroed, go to the initialization directly */
 	SyMemBackendInitFromParent(&pHash->sAllocator,unqliteExportMemBackend());
-#if defined(UNQLITE_ENABLE_THREADS)
-	/* Already protected by the upper layers */
-	SyMemBackendDisbaleMutexing(&pHash->sAllocator);
-#endif
+//#if defined(UNQLITE_ENABLE_THREADS)
+//	/* Already protected by the upper layers */
+//	SyMemBackendDisbaleMutexing(&pHash->sAllocator);
+//#endif
 	pHash->iPageSize = iPageSize;
 	/* Default hash function */
 	pHash->xHash = lhash_bin_hash;
@@ -52219,10 +52219,10 @@ static int MemHashInit(unqlite_kv_engine *pKvEngine,int iPageSize)
 	/* Note that this instance is already zeroed */	
 	/* Memory backend */
 	SyMemBackendInitFromParent(&pEngine->sAlloc,unqliteExportMemBackend());
-#if defined(UNQLITE_ENABLE_THREADS)
-	/* Already protected by the upper layers */
-	SyMemBackendDisbaleMutexing(&pEngine->sAlloc);
-#endif
+//#if defined(UNQLITE_ENABLE_THREADS)
+//	/* Already protected by the upper layers */
+//	SyMemBackendDisbaleMutexing(&pEngine->sAlloc);
+//#endif
 	/* Default hash & comparison function */
 	pEngine->xHash = MemHashFunc;
 	pEngine->xCmp = SyMemcmp;
