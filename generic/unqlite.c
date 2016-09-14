@@ -1,6 +1,7 @@
 /*
  * Symisc unQLite: An Embeddable NoSQL (Post Modern) Database Engine.
  * Copyright (C) 2012-2013, Symisc Systems http://unqlite.org/
+ * Copyright (C) 2014, Yuras Shumovich <shumovichy@gmail.com>
  * Version 1.1.6
  * For information on licensing, redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES
  * please contact Symisc Systems via:
@@ -49943,6 +49944,7 @@ static int lhAllocateSpace(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft)
 		SyBigEndianPack16(&zBlock[2],iBlksz-nByte); /* Block size*/
 		/* Offset of the new block */
 		iNext = (sxu16)(zPtr - pPage->pRaw->zData);
+		iBlksz = nByte;
 	}
 	/* Fix offsets */
 	if( zPrev ){
@@ -49954,7 +49956,7 @@ static int lhAllocateSpace(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft)
 		SyBigEndianPack16(&pPage->pRaw->zData[2/* Offset of the first cell1*/],iNext);
 	}
 	/* All done */
-	pPage->nFree -= nByte;
+	pPage->nFree -= iBlksz;
 	return UNQLITE_OK;
 }
 /*
@@ -50742,18 +50744,22 @@ static int lhFindSlavePage(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft,lhpage **ppS
 	/* Look for an already attached slave page */
 	for( i = 0 ; i < pMaster->iSlave ; ++i ){
 		/* Find a free chunk big enough */
-		rc = lhAllocateSpace(pSlave,L_HASH_CELL_SZ+nAmount,&iOfft);
+		sxu16 size = L_HASH_CELL_SZ + nAmount;
+		rc = lhAllocateSpace(pSlave,size,&iOfft);
 		if( rc != UNQLITE_OK ){
 			/* A space for cell header only */
-			rc = lhAllocateSpace(pSlave,L_HASH_CELL_SZ,&iOfft);
+			size = L_HASH_CELL_SZ;
+			rc = lhAllocateSpace(pSlave,size,&iOfft);
 		}
 		if( rc == UNQLITE_OK ){
 			/* All done */
 			if( pOfft ){
 				*pOfft = iOfft;
+			}else{
+				rc = lhRestoreSpace(pSlave, iOfft, size);
 			}
 			*ppSlave = pSlave;
-			return UNQLITE_OK;
+			return rc;
 		}
 		/* Point to the next slave page */
 		pSlave = pSlave->pNextSlave;
@@ -57957,6 +57963,26 @@ static int unqliteKvIoPageDontMakeHot(unqlite_page *pRaw)
 		return UNQLITE_OK;
 	}
 	pPage->flags |= PAGE_DONT_MAKE_HOT;
+
+	/* Remove from hot dirty list if it is already there */
+	if( pPage->flags & PAGE_HOT_DIRTY ){
+		Pager *pPager = pPage->pPager;
+		if( pPage->pNextHot ){
+			pPage->pNextHot->pPrevHot = pPage->pPrevHot;
+		}
+		if( pPage->pPrevHot ){
+			pPage->pPrevHot->pNextHot = pPage->pNextHot;
+		}
+		if( pPager->pFirstHot == pPage ){
+			pPager->pFirstHot = pPage->pPrevHot;
+		}
+		if( pPager->pHotDirty == pPage ){
+			pPager->pHotDirty = pPage->pNextHot;
+		}
+		pPager->nHot--;
+		pPage->flags &= ~PAGE_HOT_DIRTY;
+	}
+
 	return UNQLITE_OK;
 }
 /* 
