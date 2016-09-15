@@ -2713,6 +2713,7 @@ struct jx9_vm
  */
 enum iErrCode
 {
+	E_ABORT             = -1,  /* deadliness error， should halt script execution. */
 	E_ERROR             = 1,   /* Fatal run-time errors. These indicate errors that can not be recovered 
 							    * from, such as a memory allocation problem. Execution of the script is
 							    * halted.
@@ -17477,7 +17478,7 @@ JX9_PRIVATE sxi32 jx9CompileSimpleString(jx9_gen_state *pGen, sxi32 iCompileFlag
 	/* Delimit the string */
 	zIn  = pStr->zString;
 	zEnd = &zIn[pStr->nByte];
-	if( zIn >= zEnd ){
+	if( zIn > zEnd ){
 		/* Empty string, load NULL */
 		jx9VmEmitInstr(pGen->pVm, JX9_OP_LOADC, 0, 0, 0, 0);
 		return SXRET_OK;
@@ -17510,6 +17511,10 @@ JX9_PRIVATE sxi32 jx9CompileSimpleString(jx9_gen_state *pGen, sxi32 iCompileFlag
 		if( zIn > zCur ){
 			/* Append raw contents*/
 			jx9MemObjStringAppend(pObj, zCur, (sxu32)(zIn-zCur));
+		}
+		else
+		{
+			jx9MemObjStringAppend(pObj, "", 0);
 		}
 		zIn++;
 		if( zIn < zEnd ){
@@ -17657,7 +17662,7 @@ static sxi32 GenStateCompileString(jx9_gen_state *pGen)
 	/* Delimit the string */
 	zIn  = pStr->zString;
 	zEnd = &zIn[pStr->nByte];
-	if( zIn >= zEnd ){
+	if( zIn > zEnd ){
 		/* Empty string, load NULL */
 		jx9VmEmitInstr(pGen->pVm, JX9_OP_LOADC, 0, 0, 0, 0);
 		return SXRET_OK;
@@ -17682,6 +17687,16 @@ static sxi32 GenStateCompileString(jx9_gen_state *pGen)
 				}
 			}
 			jx9MemObjStringAppend(pObj, zCur, (sxu32)(zIn-zCur));
+		}
+		else
+		{
+			if( pObj == 0 ){
+				pObj = GenStateNewStrObj(&(*pGen), &iCons);
+				if( pObj == 0 ){
+					return SXERR_ABORT;
+				}
+			}
+			jx9MemObjStringAppend(pObj, "", 0);
 		}
 		if( zIn >= zEnd ){
 			break;
@@ -18091,6 +18106,14 @@ JX9_PRIVATE sxi32 jx9CompileJsonObject(jx9_gen_state *pGen, sxi32 iCompileFlag)
 			pCur++;
 		}
 		rc = SXERR_EMPTY;
+		if( (pCur->nType & JX9_TK_COLON) == 0 ){
+			rc = jx9GenCompileError(&(*pGen), E_ABORT, pCur->nLine, "JSON Object: Missing colon string \":\"");
+			if( rc == SXERR_ABORT ){
+				return SXERR_ABORT;
+			}
+			return SXRET_OK;
+		}
+
 		if( pCur < pGen->pIn ){
 			if( &pCur[1] >= pGen->pIn ){
 				/* Missing value */
@@ -31845,7 +31868,7 @@ JX9_PRIVATE sxi32 jx9MemObjCmp(jx9_value *pObj1, jx9_value *pObj2, int bStrict, 
 	}
 	/* Combine flag together */
 	iComb = pObj1->iFlags|pObj2->iFlags;
-	if( iComb & (MEMOBJ_NULL|MEMOBJ_RES|MEMOBJ_BOOL) ){
+	if( iComb & (MEMOBJ_RES|MEMOBJ_BOOL) ){
 		/* Convert to boolean: Keep in mind FALSE < TRUE */
 		if( (pObj1->iFlags & MEMOBJ_BOOL) == 0 ){
 			jx9MemObjToBool(pObj1);
@@ -31854,6 +31877,13 @@ JX9_PRIVATE sxi32 jx9MemObjCmp(jx9_value *pObj1, jx9_value *pObj2, int bStrict, 
 			jx9MemObjToBool(pObj2);
 		}
 		return (sxi32)((pObj1->x.iVal != 0) - (pObj2->x.iVal != 0));
+	}else if( iComb & MEMOBJ_NULL ){
+		if( (pObj1->iFlags & MEMOBJ_NULL) == 0 ){
+			return 1;
+		}
+		if( (pObj2->iFlags & MEMOBJ_NULL) == 0 ){
+			return -1;
+		}
 	}else if ( iComb & MEMOBJ_HASHMAP ){
 		/* Hashmap aka 'array' comparison */
 		if( (pObj1->iFlags & MEMOBJ_HASHMAP) == 0 ){
