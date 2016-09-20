@@ -1,3 +1,7 @@
+2016-09-21  Danilo Chang  <ray2501@gmail.com>
+
+	* Set version to v0.3
+
 2016-09-15  Danilo Chang  <ray2501@gmail.com>
 
 	* merge code to fix bug (port bug fixes from vedis)
