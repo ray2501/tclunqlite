@@ -25,7 +25,7 @@ database files from Tcl.
 %setup -q -n %{name}
 
 %build
-CFLAGS="%optflags" ./configure \
+./configure \
 	--prefix=%{directory} \
 	--exec-prefix=%{directory} \
 	--libdir=%{directory}/%{_lib}
