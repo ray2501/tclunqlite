@@ -4,7 +4,7 @@ tclunqlite
 This is the UnQLite extension for Tcl using the Tcl Extension
 Architecture (TEA).  For additional information on UnQLite see
 
-[http://unqlite.org/] (http://unqlite.org/)
+[http://unqlite.org/](http://unqlite.org/)
 
 
 UNIX BUILD
