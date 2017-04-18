@@ -10,8 +10,10 @@ License:       BSD
 Group:         Development/Libraries/Tcl
 Source:        https://sites.google.com/site/ray2501/tclunqlite/tclunqlite_0.3.2.zip
 URL:           https://sites.google.com/site/ray2501/tclunqlite 
-Buildrequires: tcl-devel >= 8.1
-Requires: tcl >= 8.1
+BuildRequires: autoconf
+BuildRequires: make
+BuildRequires: tcl-devel >= 8.1
+Requires:      tcl >= 8.1
 BuildRoot:     %{buildroot}
 
 %description
