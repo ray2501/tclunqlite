@@ -1,3 +1,7 @@
+2017-12-05  Danilo Chang  <ray2501@gmail.com>
+
+	* generic/unqlite.c: close va_list with va_end
+
 2017-01-15  Danilo Chang  <ray2501@gmail.com>
 
 	* generic/tclunqlite.c: update year
