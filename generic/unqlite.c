@@ -1,8 +1,7 @@
 /*
- * Symisc unQLite: An Embeddable NoSQL (Post Modern) Database Engine.
- * Copyright (C) 2012-2016, Symisc Systems http://unqlite.org/
- * Copyright (C) 2014, Yuras Shumovich <shumovichy@gmail.com>
- * Version 1.1.7
+ * Symisc UnQLite: An Embeddable NoSQL (Post Modern) Database Engine.
+ * Copyright (C) 2012-2018, Symisc Systems http://unqlite.org/
+ * Version 1.1.8
  * For information on licensing, redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES
  * please contact Symisc Systems via:
  *       legal@symisc.net
@@ -12,7 +11,7 @@
  *      http://unqlite.org/licensing.html
  */
 /*
- * Copyright (C) 2012, 2016 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
+ * Copyright (C) 2012, 2018 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +36,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * $SymiscID: unqlite.c v1.1.7 Win10 2106-12-02 00:04:12 stable <chm@symisc.net> $ 
+ * $SymiscID: unqlite.c v1.1.8 Win10 2108-01-21 00:02:12 stable <chm@symisc.net> $ 
  */
 /* This file is an amalgamation of many separate C source files from unqlite version 1.1.6
  * By combining all the individual C code files into this single large file, the entire code
@@ -68,7 +67,6 @@
 /*
  * ----------------------------------------------------------
  * File: unqlite.h
- * MD5: d26e9847c6587edbbb183d0115d172cb
  * ----------------------------------------------------------
  */
 /* This file was automatically generated.  Do not edit (Except for compile time directives)! */ 
@@ -76,8 +74,8 @@
 #define _UNQLITE_H_
 /*
  * Symisc UnQLite: An Embeddable NoSQL (Post Modern) Database Engine.
- * Copyright (C) 2012-2016, Symisc Systems http://unqlite.org/
- * Version 1.1.6
+ * Copyright (C) 2012-2018, Symisc Systems http://unqlite.org/
+ * Version 1.1.8
  * For information on licensing, redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES
  * please contact Symisc Systems via:
  *       legal@symisc.net
@@ -87,7 +85,7 @@
  *      http://unqlite.org/licensing.html
  */
 /*
- * Copyright (C) 2012, 2016 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
+ * Copyright (C) 2012, 2018 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +109,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- /* $SymiscID: unqlite.h v1.2 Win10 2106-12-02 00:04:12 stable  <chm@symisc.net> $ */
+ /* $SymiscID: unqlite.h v1.2 Win10 2108-01-21 23:59:12 stable <chm@symisc.net>  $ */
 #include <stdarg.h> /* needed for the definition of va_list */
 /*
  * Compile time engine version, signature, identification in the symisc source tree
@@ -127,13 +125,13 @@
  * version number and Y is the minor version number and Z is the release
  * number.
  */
-#define UNQLITE_VERSION "1.1.7"
+#define UNQLITE_VERSION "1.1.8"
 /*
  * The UNQLITE_VERSION_NUMBER C preprocessor macro resolves to an integer
  * with the value (X*1000000 + Y*1000 + Z) where X, Y, and Z are the same
  * numbers used in [UNQLITE_VERSION].
  */
-#define UNQLITE_VERSION_NUMBER 1001007
+#define UNQLITE_VERSION_NUMBER 1001008
 /*
  * The UNQLITE_SIG C preprocessor macro evaluates to a string
  * literal which is the public signature of the unqlite engine.
@@ -141,7 +139,7 @@
  * generated Server MIME header as follows:
  *   Server: YourWebServer/x.x unqlite/x.x.x \r\n
  */
-#define UNQLITE_SIG "unqlite/1.1.7"
+#define UNQLITE_SIG "unqlite/1.1.8"
 /*
  * UnQLite identification in the Symisc source tree:
  * Each particular check-in of a particular software released
@@ -158,7 +156,7 @@
  *   licensing@symisc.net
  *   contact@symisc.net
  */
-#define UNQLITE_COPYRIGHT "Copyright (C) Symisc Systems, S.U.A.R.L [Mrad Chems Eddine <chm@symisc.net>] 2012-2016, http://unqlite.org/"
+#define UNQLITE_COPYRIGHT "Copyright (C) Symisc Systems, S.U.A.R.L [Mrad Chems Eddine <chm@symisc.net>] 2012-2018, http://unqlite.org/"
 /* Make sure we can call this stuff from C++ */
 #ifdef __cplusplus
 extern "C" { 
@@ -12479,7 +12477,7 @@ JX9_PRIVATE sxi32 jx9InputFormat(
             iVal = iVal/base;
           }while( iVal>0 );
         }
-        length = &zWorker[JX9_FMT_BUFSIZ-1]-zBuf;
+        length = (int)(&zWorker[JX9_FMT_BUFSIZ-1]-zBuf);
         for(idx=precision-length; idx>0; idx--){
           *(--zBuf) = '0';                             /* Zero pad */
         }
@@ -12491,7 +12489,7 @@ JX9_PRIVATE sxi32 jx9InputFormat(
             for(pre=pInfo->prefix; (x=(*pre))!=0; pre++) *(--zBuf) = x;
           }
         }
-        length = &zWorker[JX9_FMT_BUFSIZ-1]-zBuf;
+        length = (int)(&zWorker[JX9_FMT_BUFSIZ-1]-zBuf);
 		break;
 		case JX9_FMT_FLOAT:
 		case JX9_FMT_EXP:
@@ -29365,7 +29363,7 @@ static const SyFmtInfo aFmt[] = {
             longvalue = longvalue/base;
           }while( longvalue>0 );
         }
-        length = &buf[SXFMT_BUFSIZ-1]-bufpt;
+        length = (int)(&buf[SXFMT_BUFSIZ-1]-bufpt);
         for(idx=precision-length; idx>0; idx--){
           *(--bufpt) = '0';                             /* Zero pad */
         }
@@ -29377,7 +29375,7 @@ static const SyFmtInfo aFmt[] = {
             for(pre=infop->prefix; (x=(*pre))!=0; pre++) *(--bufpt) = x;
           }
         }
-        length = &buf[SXFMT_BUFSIZ-1]-bufpt;
+        length = (int)(&buf[SXFMT_BUFSIZ-1]-bufpt);
         break;
       case SXFMT_FLOAT:
       case SXFMT_EXP:
@@ -29486,7 +29484,7 @@ static const SyFmtInfo aFmt[] = {
         /* The converted number is in buf[] and zero terminated.Output it.
         ** Note that the number is in the usual order, not reversed as with
         ** integer conversions.*/
-        length = bufpt-buf;
+        length = (int)(bufpt-buf);
         bufpt = buf;
 
         /* Special case:  Add leading zeros if the flag_zeropad flag is
@@ -49824,8 +49822,8 @@ static int lhPageDefragment(lhpage *pPage)
 	lhcell *pCell;
 	/* Get a temporary page from the pager. This opertaion never fail */
 	zTmp = pEngine->pIo->xTmpPage(pEngine->pIo->pHandle);
-	/* Move the target cells to the begining */
-	pCell = pPage->pList;
+	/* Move the target cells to the beginning */
+	pCell = pPage->pMaster->pList;
 	/* Write the slave page number */
 	SyBigEndianPack64(&zTmp[2/*Offset of the first cell */+2/*Offset of the first free block */],pPage->sHdr.iSlave);
 	zPtr = &zTmp[L_HASH_PAGE_HDR_SZ]; /* Offset to start writing from */
@@ -57177,7 +57175,7 @@ static int pager_commit_phase1(Pager *pPager)
 		}
 	}
 	if( pPager->iFlags & PAGER_CTRL_DIRTY_COMMIT ){
-		/* Synce the database first if a dirty commit have been applied */
+		/* Sync the database first if a dirty commit have been applied */
 		unqliteOsSync(pPager->pfd,UNQLITE_SYNC_NORMAL);
 	}
 	/* Write the dirty pages */
@@ -57188,6 +57186,18 @@ static int pager_commit_phase1(Pager *pPager)
 		pPager->pFirstDirty = pDirty;
 		unqliteGenError(pPager->pDb,"IO error while writing dirty pages, rollback your database");
 		return rc;
+	}
+	/* release all pages */
+	{
+		Page *p;
+
+		while (1) {
+			p = pPager->pAll;
+			if (p == 0) {
+				break;
+			}
+			pager_unlink_page(pPager, p);
+		}
 	}
 	/* If the file on disk is not the same size as the database image,
      * then use unqliteOsTruncate to grow or shrink the file here.
@@ -57216,7 +57226,7 @@ static int pager_commit_phase2(Pager *pPager)
 				/* Finally, unlink the journal file */
 				unqliteOsDelete(pPager->pVfs,pPager->zJournal,1);
 			}
-			/* Downgrade to shraed lock */
+			/* Downgrade to shared lock */
 			pager_unlock_db(pPager,SHARED_LOCK);
 			pPager->iState = PAGER_READER;
 			if( pPager->pVec ){
@@ -60195,8 +60205,8 @@ UNQLITE_PRIVATE int unqliteRegisterJx9Functions(unqlite_vm *pVm)
 /* END-OF-IMPLEMENTATION: unqlite@embedded@symisc 34-09-46 */
 /*
  * Symisc unQLite: An Embeddable NoSQL (Post Modern) Database Engine.
- * Copyright (C) 2012-2013, Symisc Systems http://unqlite.org/
- * Version 1.1.6
+ * Copyright (C) 2012-2018, Symisc Systems http://unqlite.org/
+ * Version 1.1.8
  * For information on licensing, redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES
  * please contact Symisc Systems via:
  *       legal@symisc.net
@@ -60206,7 +60216,7 @@ UNQLITE_PRIVATE int unqliteRegisterJx9Functions(unqlite_vm *pVm)
  *      http://unqlite.org/licensing.html
  */
 /*
- * Copyright (C) 2012, 2013 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
+ * Copyright (C) 2012, 2018 Symisc Systems, S.U.A.R.L [M.I.A.G Mrad Chems Eddine <chm@symisc.net>].
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
