@@ -4,11 +4,11 @@
 
 Name:          tclunqlite
 Summary:       Tcl interface for UnQLite
-Version:       0.3.2
+Version:       0.3.3
 Release:       2
 License:       BSD
 Group:         Development/Libraries/Tcl
-Source:        https://sites.google.com/site/ray2501/tclunqlite/tclunqlite_0.3.2.zip
+Source:        https://sites.google.com/site/ray2501/tclunqlite/tclunqlite_0.3.3.zip
 URL:           https://sites.google.com/site/ray2501/tclunqlite 
 BuildRequires: autoconf
 BuildRequires: make
