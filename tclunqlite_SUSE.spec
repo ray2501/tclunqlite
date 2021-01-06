@@ -4,11 +4,11 @@
 
 Name:          tclunqlite
 Summary:       Tcl interface for UnQLite
-Version:       0.3.4
+Version:       0.3.5
 Release:       2
 License:       BSD
 Group:         Development/Libraries/Tcl
-Source:        tclunqlite_%{version}.zip
+Source:        tclunqlite-%{version}.tar.gz
 URL:           https://sites.google.com/site/ray2501/tclunqlite 
 BuildRequires: autoconf
 BuildRequires: make
@@ -25,7 +25,7 @@ This extension provides an easy to use interface for accessing UnQLite
 database files from Tcl.
 
 %prep
-%setup -q -n %{name}
+%setup -q -n %{name}-%{version}
 
 %build
 ./configure \
