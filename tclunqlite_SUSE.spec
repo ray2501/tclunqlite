@@ -6,7 +6,7 @@ Name:          tclunqlite
 Summary:       Tcl interface for UnQLite
 Version:       0.3.5
 Release:       2
-License:       BSD
+License:       BSD-2-Clause
 Group:         Development/Libraries/Tcl
 Source:        tclunqlite-%{version}.tar.gz
 URL:           https://sites.google.com/site/ray2501/tclunqlite 
