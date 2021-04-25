@@ -1716,8 +1716,12 @@ struct SyBlob
 #define SyBlobDataAt(BLOB, OFFT)	 ((void *)(&((char *)(BLOB)->pBlob)[OFFT]))
 #define SyBlobGetAllocator(BLOB) ((BLOB)->pAllocator)
 
+#ifndef SXMEM_POOL_INCR
 #define SXMEM_POOL_INCR			3
+#endif
+#ifndef SXMEM_POOL_NBUCKETS
 #define SXMEM_POOL_NBUCKETS		12
+#endif
 #define SXMEM_BACKEND_MAGIC	0xBAC3E67D
 #define SXMEM_BACKEND_CORRUPT(BACKEND)	(BACKEND == 0 || BACKEND->nMagic != SXMEM_BACKEND_MAGIC)
 
@@ -27322,7 +27326,7 @@ JX9_PRIVATE sxi32 SyMemBackendDisbaleMutexing(SyMemBackend *pBackend)
 /*
  * Memory pool allocator
  */
-#define SXMEM_POOL_MAGIC		0xDEAD
+#define SXMEM_POOL_MAGIC		0xDEADu
 #define SXMEM_POOL_MAXALLOC		(1<<(SXMEM_POOL_NBUCKETS+SXMEM_POOL_INCR)) 
 #define SXMEM_POOL_MINALLOC		(1<<(SXMEM_POOL_INCR))
 static sxi32 MemPoolBucketAlloc(SyMemBackend *pBackend, sxu32 nBucket)
@@ -29828,7 +29832,7 @@ static sxi32 SyLittleEndianUnpack32(sxu32 *uNB, const unsigned char *buf, sxu32 
 	if( Len < sizeof(sxu32) ){ 
 		return SXERR_SHORT;
 	}
-	*uNB =  buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+	*uNB =  buf[0] + (buf[1] << 8) + (buf[2] << 16) + ((sxu32)buf[3] << 24);
 	return SXRET_OK;
 }
 static sxi32 SyLittleEndianUnpack16(sxu16 *pOut, const unsigned char *zBuf, sxu32 nLen)
@@ -30950,7 +30954,7 @@ JX9_PRIVATE void SyBigEndianPack32(unsigned char *buf,sxu32 nb)
 }
 JX9_PRIVATE void SyBigEndianUnpack32(const unsigned char *buf,sxu32 *uNB)
 {
-	*uNB = buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
+	*uNB = buf[3] + (buf[2] << 8) + (buf[1] << 16) + ((sxu32)buf[0] << 24);
 }
 JX9_PRIVATE void SyBigEndianPack16(unsigned char *buf,sxu16 nb)
 {
@@ -30975,8 +30979,8 @@ JX9_PRIVATE void SyBigEndianPack64(unsigned char *buf,sxu64 n64)
 JX9_PRIVATE void SyBigEndianUnpack64(const unsigned char *buf,sxu64 *n64)
 {
 	sxu32 u1,u2;
-	u1 = buf[7] + (buf[6] << 8) + (buf[5] << 16) + (buf[4] << 24);
-	u2 = buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
+	u1 = buf[7] + (buf[6] << 8) + (buf[5] << 16) + ((sxu32)buf[4] << 24);
+	u2 = buf[3] + (buf[2] << 8) + (buf[1] << 16) + ((sxu32)buf[0] << 24);
 	*n64 = (((sxu64)u2) << 32) | u1;
 }
 JX9_PRIVATE sxi32 SyBlobAppendBig64(SyBlob *pBlob,sxu64 n64)
@@ -54094,7 +54098,9 @@ static int unixOpen(
   ** a file-descriptor on the directory too. The first time unixSync()
   ** is called the directory file descriptor will be fsync()ed and close()d.
   */
+#ifndef UNQLITE_DISABLE_DIRSYNC
   int isOpenDirectory = isCreate;
+#endif
   const char *zName = zPath;
 
   SyZero(p,sizeof(unixFile));
@@ -54142,6 +54148,7 @@ static int unixOpen(
     unlink(zName);
   }
 
+#ifndef UNQLITE_DISABLE_DIRSYNC
   if( isOpenDirectory ){
     rc = openDirectory(zPath, &dirfd);
     if( rc!=UNQLITE_OK ){
@@ -54153,6 +54160,7 @@ static int unixOpen(
       goto open_finished;
     }
   }
+#endif
 
 #ifdef FD_CLOEXEC
   fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
