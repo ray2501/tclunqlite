@@ -1,7 +1,8 @@
 2021-09-14  Danilo Chang  <ray2501@gmail.com>
 
 	* Update UnQLite source code
-	  Fix Json-Tokenizer doesn't work with negative numbers
+	  - Renamed pgno field into iPage
+	  - Fix Json-Tokenizer doesn't work with negative numbers
 
 2021-04-25  Danilo Chang  <ray2501@gmail.com>
 
