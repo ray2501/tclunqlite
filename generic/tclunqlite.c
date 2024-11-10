@@ -157,7 +157,7 @@ static int CursorObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*ob
   switch( (enum CURSOR_enum) choice ){
     case CURSOR_SEEK: {
       char *zKey;
-      int len;
+      Tcl_Size len;
       int iPos;
 
       if( objc == 4 ){
@@ -542,7 +542,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       char *zKey;
       char *zData = NULL;
       unsigned char *zData_binary = NULL;
-      int len;
+      Tcl_Size len;
       char *zArg;
       int binary_mode = 0;
 
@@ -600,7 +600,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       char *zKey;
       char *zData = NULL;
       unsigned char *zData_binary = NULL;
-      int len;
+      Tcl_Size len;
       char *zArg;
       int binary_mode = 0;
 
@@ -655,7 +655,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
     case DB_KV_FETCH: {
       char *zKey;
-      int len;
+      Tcl_Size len;
       char *zBuf = NULL;
       unsigned char *zBuf_binary = NULL;
       signed long long int nBytes;
@@ -735,7 +735,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
     case DB_KV_DELETE: {
       char *zKey;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         zKey = Tcl_GetStringFromObj(objv[2], &len);
@@ -849,7 +849,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
     case DB_CURSOR_INIT: {
       char *zArg;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         zArg = Tcl_GetStringFromObj(objv[2], &len);
@@ -926,7 +926,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       char *collection_name;
       unqlite_value *value;
       int bool_result;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         collection_name = Tcl_GetStringFromObj(objv[2], &len);
@@ -1058,7 +1058,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     case DB_DOC_FETCH_ID: {
       const char *JX9_FETCH_ID = "print db_fetch_by_id($argv[0],$argv[1]);";
       char *record_id;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         record_id = Tcl_GetStringFromObj(objv[2], &len);
@@ -1136,7 +1136,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     case DB_DOC_STORE: {
       const char *JX9_STORE = "$rc = db_store($argv[0],$argv[1]);";
       char *json_record;
-      int len;
+      Tcl_Size len;
       unqlite_value *value;
       int bool_result;
 
@@ -1196,7 +1196,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       const char *JX9_STORE = "$rc = db_update_record($argv[0],$argv[1],$argv[2]);";
       char *record_id;
       char *json_record;
-      int len;
+      Tcl_Size len;
       unqlite_value *value;
       int bool_result;
 
@@ -1269,7 +1269,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
     case DB_DOC_DELETE: {
       const char *JX9_DELETE = "$rc = db_drop_record($argv[0],$argv[1]);";
       char *record_id;
-      int len;
+      Tcl_Size len;
       unqlite_value *value;
       int bool_result;
 
@@ -1546,7 +1546,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
      */
     case DB_JX9_EVAL: {
       char *Jx9_script_string;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         Jx9_script_string = Tcl_GetStringFromObj(objv[2], &len);
@@ -1612,7 +1612,7 @@ static int DbObjCmd(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
       const char *zFile;
       Tcl_Obj *pathPtr;
       Tcl_DString translatedFilename;
-      int len;
+      Tcl_Size len;
 
       if( objc == 3 ){
         zFile = Tcl_GetStringFromObj(objv[2], &len);
@@ -1851,11 +1851,7 @@ static int DbMain(void *cd, Tcl_Interp *interp, int objc,Tcl_Obj *const*objv){
 
 EXTERN int Unqlite_Init(Tcl_Interp *interp)
 {
-    /*
-     * This may work with 8.0, but we are using strictly stubs here,
-     * which requires 8.1.
-     */
-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL) {
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
 	return TCL_ERROR;
     }
     if (Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION) != TCL_OK) {
