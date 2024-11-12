@@ -208,14 +208,14 @@ Examples
 
     set size [file size "/home/danilo/Downloads/unqlite-db-116.zip"] 
     set fd [open "/home/danilo/Downloads/unqlite-db-116.zip" {RDWR BINARY}]  
-    fconfigure $fd -blocking 1 -encoding binary -translation binary 
+    fconfigure $fd -blocking 1 -encoding iso8859-1 -translation binary 
     set data [read $fd $size]  
     close $fd  
     Db1 kv_store $filename $data -binary 1
 
     set fetch_data [Db1 kv_fetch $filename -binary 1]
     set fd [open "/home/danilo/Downloads/unqlite-db-116_test.zip" {CREAT RDWR BINARY}]  
-    fconfigure $fd -blocking 1 -encoding binary -translation binary 
+    fconfigure $fd -blocking 1 -encoding iso8859-1 -translation binary 
     puts -nonewline $fd $fetch_data  
     close $fd  
 
@@ -230,7 +230,7 @@ Examples
 
     set size [file size "/home/danilo/Downloads/unqlite-db-116.zip"] 
     set fd [open "/home/danilo/Downloads/unqlite-db-116.zip" {RDWR BINARY}]  
-    fconfigure $fd -blocking 1 -encoding binary -translation binary 
+    fconfigure $fd -blocking 1 -encoding iso8859-1 -translation binary 
     set data [read $fd $size]  
     close $fd  
     Db1 kv_append $filename $data -binary 1
@@ -239,7 +239,7 @@ Examples
     cursor1 seek $filename 0
     set fetch_data [cursor1 getdata -binary 1]
     set fd [open "/home/danilo/Downloads/unqlite-db-116_test.zip" {CREAT RDWR BINARY}]  
-    fconfigure $fd -blocking 1 -encoding binary -translation binary 
+    fconfigure $fd -blocking 1 -encoding iso8859-1 -translation binary 
     puts -nonewline $fd $fetch_data  
     close $fd  
 
