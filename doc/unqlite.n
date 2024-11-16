@@ -12,4 +12,4 @@ serverless, zero-configuration, transactional NoSQL database engine.
 This extension provides an easy to use interface for accessing UnQLite 
 database files from Tcl.
 .PP
-For full documentation see \fIhttp://unqlite.org/\fR.
+For full documentation see \fIhttps://unqlite.symisc.net/\fR.
