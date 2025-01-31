@@ -4,7 +4,7 @@
 
 Name:          tclunqlite
 Summary:       Tcl interface for UnQLite
-Version:       0.3.9
+Version:       0.4.0
 Release:       2
 License:       BSD-2-Clause
 Group:         Development/Libraries/Tcl
